@@ -1,9 +1,12 @@
 package iv.widget;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,8 +34,15 @@ public class Main extends AppWidgetProvider {
         // In case there are multiple widgets
         for (int i = 0; i < N; i++) {
             int appWidgetId = appWidgetIds[i];
+            RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
+            remoteViews.setTextViewText(R.id.date, DateFetcher.getProperDate());
 
-
+            Intent intent = new Intent(context, Main.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            remoteViews.setOnClickPendingIntent(R.id.weatherDesc, pendingIntent);
+            appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
         }
     }
 
@@ -62,6 +72,7 @@ public class Main extends AppWidgetProvider {
             tempdif = tempf - yestf;
         } catch (JSONException je) {
             //bad json file, frowny face
+            je.printStackTrace();
         }
         //parse tempdif
         // negative means today is colder
@@ -80,7 +91,8 @@ public class Main extends AppWidgetProvider {
         }
         //change widget view to reflect "current"
         //
-
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
+        remoteViews.setTextViewText(R.id.weatherDesc, current.toString());
     }
 
 }
