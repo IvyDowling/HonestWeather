@@ -5,17 +5,11 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class Main extends AppWidgetProvider {
     private static final int UNIVERSAL_DEGREE_DIF = 8;
@@ -49,8 +43,8 @@ public class Main extends AppWidgetProvider {
     public void updateWeatherData(final Context context, final String state, final String city) {
         new Thread() {
             public void run() {
-                final JSONObject today = RemoteFetch.getCurrentWeather(context, state, city);
-                final JSONObject yesterday = RemoteFetch.getPastWeather(context, state, city);
+                final JSONObject today = RemoteFetch.getCurrentWeather(state, city);
+                final JSONObject yesterday = RemoteFetch.getPastWeather(state, city);
                 if (today == null || yesterday == null) {
                     Toast.makeText(context, "couldnt find that city", Toast.LENGTH_LONG).show();
                 } else {
@@ -63,18 +57,21 @@ public class Main extends AppWidgetProvider {
 
     public Weather parseWeather(JSONObject today, JSONObject yesterday) {
         int tempdif = 0;
+        System.out.println(today.toString());
+        System.out.println(yesterday.toString());
         try {
-            int tempf = today.getInt("temp_f");
+            JSONObject est = today.getJSONObject("estimated");
+            int tempf = est.getInt("temp_f");
             //this one is tricky,
             // here we have gotten a list of weather updates
             // at different times through the day.
-            int yestf = yesterday.getInt("tempi");
+            JSONObject hist = yesterday.getJSONObject("history");
+            int yestf = hist.getInt("tempi");
             tempdif = tempf - yestf;
         } catch (JSONException je) {
             //bad json file, frowny face
             je.printStackTrace();
         }
-        System.out.println("dif: " + tempdif);
         //parse tempdif
         // negative means today is colder
         // pos means today is warmer
@@ -84,7 +81,7 @@ public class Main extends AppWidgetProvider {
         } else if (tempdif > 0) {
             current = Weather.WARM;
         } else if (tempdif == 0) {
-            current = Weather.NICE;
+            current = Weather.SAME;
         } else if (tempdif < UNIVERSAL_DEGREE_DIF) {
             current = Weather.COLD;
         } else if (tempdif < 0) {

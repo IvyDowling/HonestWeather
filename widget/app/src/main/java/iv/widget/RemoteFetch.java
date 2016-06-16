@@ -17,7 +17,7 @@ public class RemoteFetch {
     private static final String WEATHER_UNDERGROUND_YESTERDAY =
             "http://api.wunderground.com/api/KEY/yesterday/q/STATE/CITY.json";
 
-    public static JSONObject getCurrentWeather(Context context, String state, String city) {
+    public static JSONObject getCurrentWeather(String state, String city) {
         //https://www.wunderground.com/weather/api/d/docs?d=data/conditions&MR=1
         String adj = WEATHER_UNDERGROUND_CURRENT_WEATHER
                 .replace("KEY", "" + R.string.weatherUnderground)
@@ -30,7 +30,7 @@ public class RemoteFetch {
                     (HttpURLConnection) url.openConnection();
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(connection.getInputStream()));
-            StringBuffer json = new StringBuffer(1024);
+            StringBuffer json = new StringBuffer(10000);
             String tmp = "";
             while ((tmp = reader.readLine()) != null) {
                 json.append(tmp).append("\n");
@@ -45,7 +45,7 @@ public class RemoteFetch {
         }
     }
 
-    public static JSONObject getPastWeather(Context context, String state, String city) {
+    public static JSONObject getPastWeather(String state, String city) {
         //https://www.wunderground.com/weather/api/d/docs?d=data/yesterday
         String adj = WEATHER_UNDERGROUND_YESTERDAY
                 .replace("KEY", "" + R.string.weatherUnderground)
@@ -59,7 +59,7 @@ public class RemoteFetch {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(connection.getInputStream()));
 
-            StringBuffer json = new StringBuffer(1024);
+            StringBuffer json = new StringBuffer(10000);
             String tmp = "";
             while ((tmp = reader.readLine()) != null) {
                 json.append(tmp).append("\n");
