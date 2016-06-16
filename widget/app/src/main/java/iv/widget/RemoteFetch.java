@@ -23,10 +23,7 @@ public class RemoteFetch {
                 .replace("KEY", "" + R.string.weatherUnderground)
                 .replace("STATE", state)
                 .replace("CITY", city);
-        //DEBUG
-        //
-        System.out.println(adj);
-        //
+
         try {
             URL url = new URL(String.format(WEATHER_UNDERGROUND_CURRENT_WEATHER));
             HttpURLConnection connection =

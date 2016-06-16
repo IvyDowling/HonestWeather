@@ -74,7 +74,8 @@ public class DateFetcher {
     public static int getMonth() {
         Calendar cal = new GregorianCalendar();
         cal.setTime(new Date());
-        return cal.get(Calendar.MONTH);
+        //jan == 0, so ++
+        return cal.get(Calendar.MONTH) + 1;
     }
 
     public static int getDay() {

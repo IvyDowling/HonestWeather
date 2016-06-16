@@ -46,22 +46,22 @@ public class Main extends AppWidgetProvider {
         }
     }
 
-    private void updateWeatherData(final Context context, final String state, final String city) {
+    public void updateWeatherData(final Context context, final String state, final String city) {
         new Thread() {
             public void run() {
                 final JSONObject today = RemoteFetch.getCurrentWeather(context, state, city);
                 final JSONObject yesterday = RemoteFetch.getPastWeather(context, state, city);
-                if (today == null) {
+                if (today == null || yesterday == null) {
                     Toast.makeText(context, "couldnt find that city", Toast.LENGTH_LONG).show();
                 } else {
-                    parseWeather(context, today, yesterday);
+                    RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
+                    remoteViews.setTextViewText(R.id.weatherDesc, parseWeather(today, yesterday).toString());
                 }
             }
         }.start();
     }
 
-    private void parseWeather(final Context context, JSONObject today, JSONObject yesterday) {
-        //get current temp, and yesterday's temp.
+    public Weather parseWeather(JSONObject today, JSONObject yesterday) {
         int tempdif = 0;
         try {
             int tempf = today.getInt("temp_f");
@@ -74,25 +74,24 @@ public class Main extends AppWidgetProvider {
             //bad json file, frowny face
             je.printStackTrace();
         }
+        System.out.println("dif: " + tempdif);
         //parse tempdif
         // negative means today is colder
         // pos means today is warmer
-        Weather current = Weather.NICE;
+        Weather current = null;
         if (tempdif > UNIVERSAL_DEGREE_DIF) {
             current = Weather.HOT;
         } else if (tempdif > 0) {
             current = Weather.WARM;
         } else if (tempdif == 0) {
-            //nice
+            current = Weather.NICE;
         } else if (tempdif < UNIVERSAL_DEGREE_DIF) {
             current = Weather.COLD;
         } else if (tempdif < 0) {
             current = Weather.CHILLY;
         }
-        //change widget view to reflect "current"
         //
-        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
-        remoteViews.setTextViewText(R.id.weatherDesc, current.toString());
+        return current;
     }
 
 }
