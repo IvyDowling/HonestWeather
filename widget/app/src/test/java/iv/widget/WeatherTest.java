@@ -57,68 +57,45 @@ public class WeatherTest {
 
     @Test
     public void parseTestAbstract() {
+        m.getClass();
         JSONObject tdy = Mockito.mock(JSONObject.class);
         JSONObject yst = Mockito.mock(JSONObject.class);
         //inner mocks
         JSONArray ystArray = Mockito.mock(JSONArray.class);
         JSONObject ystArrayObject = Mockito.mock(JSONObject.class);
         JSONObject dateObject = Mockito.mock(JSONObject.class);
-        Weather result = null;
+        Weather result;
+        //get current time for the hour-match
+        SimpleDateFormat sdf = new SimpleDateFormat("HH");
+        String time = sdf.format(new Date());
         try {
-            //get current time for the hour-match
-            SimpleDateFormat sdf = new SimpleDateFormat("HH");
-            String time = sdf.format(new Date());
             //setup date mock
             Mockito.when(dateObject.getString(Mockito.anyString())).thenReturn(time);
+        } catch (JSONException je) {
+            Assert.fail(je.getMessage());
+        }
+        try {
             //setup array object mock
             Mockito.when(ystArrayObject.getDouble(Mockito.anyString())).thenReturn(50.0);
             Mockito.when(ystArrayObject.getJSONObject(Mockito.anyString())).thenReturn(dateObject);
+        } catch (JSONException je) {
+            Assert.fail(je.getMessage());
+        }
+        try {
             //setup array
-            Mockito.when(ystArray.getJSONObject(Mockito.anyByte())).thenReturn(ystArrayObject);
+            Mockito.when(ystArray.getJSONObject(0)).thenReturn(ystArrayObject);
             Mockito.when(ystArray.length()).thenReturn(100);//infinity
+        } catch (JSONException je) {
+            Assert.fail(je.getMessage());
+        }
+        try {
             //outer mock
             Mockito.when(tdy.getDouble(Mockito.anyString())).thenReturn(100.0);
             Mockito.when(yst.getJSONArray(Mockito.anyString())).thenReturn(ystArray);
-            result = m.parseWeather(tdy, yst);
         } catch (JSONException je) {
-            Assert.fail();
+            Assert.fail(je.toString());
         }
-        Assert.assertEquals(result, Weather.HOT);
-    }
-
-
-    @Test
-    public void parseTestFileExamples() {
-        BufferedReader cond = null;
-        BufferedReader yest = null;
-        try {
-            cond = new BufferedReader(new FileReader("./.conditions.json"));
-            yest = new BufferedReader(new FileReader("./.yesterday.json"));
-        } catch (FileNotFoundException fnf) {
-            Assert.fail();
-        }
-        String yestContents = "";
-        String condContents = "";
-        try {
-            while (yest.ready()) {
-                yestContents += yest.readLine();
-            }
-            while (cond.ready()) {
-                condContents += cond.readLine();
-            }
-        } catch (IOException io) {
-            Assert.fail();
-        }
-        JSONObject tdy = null;
-        JSONObject yst = null;
-        try {
-            tdy = new JSONObject(condContents);
-            yst = new JSONObject(yestContents);
-        } catch (JSONException je) {
-            Assert.fail();
-        }
-        Weather result = m.parseWeather(tdy, yst);
-        System.out.println(result);
-        Assert.assertTrue(result != null);
+        result = m.parseWeather(tdy, yst);
+        Assert.assertEquals(Weather.HOT, result);
     }
 }

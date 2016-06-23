@@ -59,13 +59,10 @@ public class Main extends AppWidgetProvider {
     }
 
     public Weather parseWeather(JSONObject today, JSONObject yesterday) {
-        int tempdif = 0;
-        System.out.println(today.toString());
-        System.out.println(yesterday.toString());
+        int tempDif = 0;
         try {
             int tempf = (int) today.getDouble("temp_f");
             int yestf = 0;
-            //this one is tricky,
             // here we have gotten a list of weather updates
             // at different times through the day.
             // so, lets get the array of observations and find
@@ -75,33 +72,34 @@ public class Main extends AppWidgetProvider {
             boolean done = false;
             for (int i = 0; i < observations.length() && !done; i++) {
                 JSONObject time = observations.getJSONObject(i);
-                if (time.getJSONObject("date").getString("hour").equals(realTime)) {
-                    yestf = (int) time.getDouble("tempi");
-                    done = true;
+                if (time != null) {
+                    JSONObject date = time.getJSONObject("date");
+                    if (realTime.equals(date.getString("hour"))) {
+                        yestf = (int) time.getDouble("tempi");
+                        done = true;
+                    }
                 }
             }
-            tempdif = tempf - yestf;
+            tempDif = tempf - yestf;
         } catch (JSONException je) {
             //bad json file, frowny face
             je.printStackTrace();
         }
-        System.out.println("temp: " + tempdif);
         //parse tempdif
         // negative means today is colder
         // pos means today is warmer
         Weather current = null;
-        if (tempdif > UNIVERSAL_DEGREE_DIF) {
+        if (tempDif > UNIVERSAL_DEGREE_DIF) {
             current = Weather.HOT;
-        } else if (tempdif > 0) {
+        } else if (tempDif > 0) {
             current = Weather.WARM;
-        } else if (tempdif == 0) {
+        } else if (tempDif == 0) {
             current = Weather.SAME;
-        } else if (tempdif < UNIVERSAL_DEGREE_DIF) {
+        } else if (tempDif < UNIVERSAL_DEGREE_DIF) {
             current = Weather.COLD;
-        } else if (tempdif < 0) {
+        } else if (tempDif < 0) {
             current = Weather.CHILLY;
         }
-        //
         return current;
     }
 
