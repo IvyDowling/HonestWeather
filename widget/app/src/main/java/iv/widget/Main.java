@@ -8,8 +8,11 @@ import android.content.Intent;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Iterator;
 
 public class Main extends AppWidgetProvider {
     private static final int UNIVERSAL_DEGREE_DIF = 8;
@@ -60,18 +63,29 @@ public class Main extends AppWidgetProvider {
         System.out.println(today.toString());
         System.out.println(yesterday.toString());
         try {
-            JSONObject est = today.getJSONObject("estimated");
-            int tempf = est.getInt("temp_f");
+            int tempf = (int) today.getDouble("temp_f");
+            int yestf = 0;
             //this one is tricky,
             // here we have gotten a list of weather updates
             // at different times through the day.
-            JSONObject hist = yesterday.getJSONObject("history");
-            int yestf = hist.getInt("tempi");
+            // so, lets get the array of observations and find
+            // the one closest to the current hour
+            JSONArray observations = yesterday.getJSONArray("observations");
+            String realTime = DateFetcher.get24Hour();
+            boolean done = false;
+            for (int i = 0; i < observations.length() && !done; i++) {
+                JSONObject time = observations.getJSONObject(i);
+                if (time.getJSONObject("date").getString("hour").equals(realTime)) {
+                    yestf = (int) time.getDouble("tempi");
+                    done = true;
+                }
+            }
             tempdif = tempf - yestf;
         } catch (JSONException je) {
             //bad json file, frowny face
             je.printStackTrace();
         }
+        System.out.println("temp: " + tempdif);
         //parse tempdif
         // negative means today is colder
         // pos means today is warmer

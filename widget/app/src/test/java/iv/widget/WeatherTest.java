@@ -2,6 +2,7 @@ package iv.widget;
 
 import android.util.JsonReader;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -14,6 +15,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class WeatherTest {
@@ -57,19 +60,27 @@ public class WeatherTest {
         JSONObject tdy = Mockito.mock(JSONObject.class);
         JSONObject yst = Mockito.mock(JSONObject.class);
         //inner mocks
-        JSONObject tdyInt = Mockito.mock(JSONObject.class);
-        JSONObject ystInt = Mockito.mock(JSONObject.class);
+        JSONArray ystArray = Mockito.mock(JSONArray.class);
+        JSONObject ystArrayObject = Mockito.mock(JSONObject.class);
+        JSONObject dateObject = Mockito.mock(JSONObject.class);
         Weather result = null;
         try {
-            //setup inner mocks
-            Mockito.when(tdyInt.getInt(Mockito.anyString())).thenReturn(100);
-            Mockito.when(ystInt.getInt(Mockito.anyString())).thenReturn(50);
+            //get current time for the hour-match
+            SimpleDateFormat sdf = new SimpleDateFormat("HH");
+            String time = sdf.format(new Date());
+            //setup date mock
+            Mockito.when(dateObject.getString(Mockito.anyString())).thenReturn(time);
+            //setup array object mock
+            Mockito.when(ystArrayObject.getDouble(Mockito.anyString())).thenReturn(50.0);
+            Mockito.when(ystArrayObject.getJSONObject(Mockito.anyString())).thenReturn(dateObject);
+            //setup array
+            Mockito.when(ystArray.getJSONObject(Mockito.anyByte())).thenReturn(ystArrayObject);
+            Mockito.when(ystArray.length()).thenReturn(100);//infinity
             //outer mock
-            Mockito.when(tdy.getJSONObject(Mockito.anyString())).thenReturn(tdyInt);
-            Mockito.when(yst.getJSONObject(Mockito.anyString())).thenReturn(ystInt);
+            Mockito.when(tdy.getDouble(Mockito.anyString())).thenReturn(100.0);
+            Mockito.when(yst.getJSONArray(Mockito.anyString())).thenReturn(ystArray);
             result = m.parseWeather(tdy, yst);
         } catch (JSONException je) {
-            //eh
             Assert.fail();
         }
         Assert.assertEquals(result, Weather.HOT);

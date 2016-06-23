@@ -1,5 +1,6 @@
 package iv.widget;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -84,4 +85,13 @@ public class DateFetcher {
         return cal.get(Calendar.DAY_OF_MONTH);
     }
 
+    public static String getTime(){
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        return sdf.format(new Date());
+    }
+
+    public static String get24Hour(){
+        SimpleDateFormat sdf = new SimpleDateFormat("HH");
+        return sdf.format(new Date());
+    }
 }
