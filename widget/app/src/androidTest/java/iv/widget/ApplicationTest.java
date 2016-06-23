@@ -9,5 +9,7 @@ import android.test.ApplicationTestCase;
 public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
         super(Application.class);
+        Main m = new Main();
+        m.updateWeatherData(super.getContext(), "VA", "Richmond");
     }
 }

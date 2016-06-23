@@ -15,7 +15,8 @@ import org.json.JSONObject;
 import java.util.Iterator;
 
 public class Main extends AppWidgetProvider {
-    private static final int UNIVERSAL_DEGREE_DIF = 8;
+    private final int UNIVERSAL_DEGREE_DIF = 8;
+    private String weatherCond = "unavailable";
 
     @Override
     public void onUpdate(Context context,
@@ -24,7 +25,6 @@ public class Main extends AppWidgetProvider {
         // start new thread to get weather data
         //need to get loc
         updateWeatherData(context, "VA", "Richmond");
-        //
         final int N = appWidgetIds.length;
         // Perform this loop procedure for each App Widget
         // that belongs to this provider
@@ -33,6 +33,7 @@ public class Main extends AppWidgetProvider {
             int appWidgetId = appWidgetIds[i];
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
             remoteViews.setTextViewText(R.id.date, DateFetcher.getProperDate());
+            remoteViews.setTextViewText(R.id.weatherDesc, weatherCond);
 
             Intent intent = new Intent(context, Main.class);
             intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
@@ -46,13 +47,23 @@ public class Main extends AppWidgetProvider {
     public void updateWeatherData(final Context context, final String state, final String city) {
         new Thread() {
             public void run() {
-                final JSONObject today = RemoteFetch.getCurrentWeather(state, city);
-                final JSONObject yesterday = RemoteFetch.getPastWeather(state, city);
+                RemoteFetch rf = new RemoteFetch();
+                JSONArray both = rf.doInBackground(state, city);
+                JSONObject today = null;
+                JSONObject yesterday = null;
+                try {
+                    today = both.getJSONObject(0);
+                    yesterday = both.getJSONObject(1);
+                } catch (JSONException je) {
+                    //just wait
+                }
                 if (today == null || yesterday == null) {
-                    Toast.makeText(context, "couldnt find that city", Toast.LENGTH_LONG).show();
-                } else {
+                    Toast.makeText(context, "could'nt find that city", Toast.LENGTH_LONG).show();
                     RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
-                    remoteViews.setTextViewText(R.id.weatherDesc, parseWeather(today, yesterday).toString());
+                    remoteViews.setTextViewText(R.id.weatherDesc, "unavailable");
+                } else {
+                    Toast.makeText(context, "finding weather", Toast.LENGTH_LONG).show();
+                    weatherCond = parseWeather(today, yesterday).toString();
                 }
             }
         }.start();
